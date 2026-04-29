@@ -23,6 +23,7 @@ uvicorn app.main:app --reload
 
 Then open:
 
+- Frontend: `http://127.0.0.1:8000/`
 - API docs: `http://127.0.0.1:8000/docs`
 - Health check: `http://127.0.0.1:8000/health`
 
@@ -33,6 +34,9 @@ With the virtualenv active:
 ```bash
 python -m app.ingest.run_sample
 ```
+
+The seed command loads a small cross-state demo queue for physicians, nurses, contractors,
+real estate salespeople, and electrical contractors so the frontend has usable rows immediately.
 
 Example search:
 

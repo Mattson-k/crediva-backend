@@ -1,0 +1,166 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Crediva</title>
+    <link rel="stylesheet" href="/static/styles.css" />
+  </head>
+  <body>
+    <div class="shell">
+      <header class="topbar">
+        <div>
+          <p class="eyebrow">Crediva</p>
+          <h1>License renewal intelligence</h1>
+        </div>
+        <nav aria-label="Primary">
+          <a href="/docs">API Docs</a>
+          <a href="/licenses/export.csv?renewal_window_min=0&renewal_window_max=60">CSV</a>
+        </nav>
+      </header>
+
+      <main class="workspace">
+        <section class="filters" aria-labelledby="filters-title">
+          <div class="section-heading">
+            <h2 id="filters-title">Search</h2>
+            <button id="resetFilters" class="icon-button" type="button" title="Reset filters">↺</button>
+          </div>
+
+          <form id="searchForm">
+            <label>
+              Profession
+              <select name="license_type_code">
+                <option value="">All professions</option>
+                <option value="MD">Physician</option>
+                <option value="RN">Registered Nurse</option>
+                <option value="GC">General Contractor</option>
+                <option value="RE_SALES">Real Estate Salesperson</option>
+                <option value="EC">Electrical Contractor</option>
+              </select>
+            </label>
+
+            <label>
+              State
+              <select name="source_state">
+                <option value="">All states</option>
+                <option value="TX">Texas</option>
+                <option value="FL">Florida</option>
+                <option value="CA">California</option>
+              </select>
+            </label>
+
+            <label>
+              Status
+              <select name="status">
+                <option value="">Any status</option>
+                <option value="active">Active</option>
+                <option value="expired">Expired</option>
+                <option value="suspended">Suspended</option>
+                <option value="revoked">Revoked</option>
+                <option value="pending">Pending</option>
+              </select>
+            </label>
+
+            <fieldset>
+              <legend>Renewal window</legend>
+              <div class="window-grid">
+                <button type="button" class="chip active" data-window-min="0" data-window-max="60">0-60</button>
+                <button type="button" class="chip" data-window-min="0" data-window-max="30">0-30</button>
+                <button type="button" class="chip" data-window-min="31" data-window-max="90">31-90</button>
+                <button type="button" class="chip" data-window-min="" data-window-max="">Any</button>
+              </div>
+            </fieldset>
+
+            <label>
+              Specialty
+              <input name="specialty" type="search" placeholder="Dermatology, roofing..." />
+            </label>
+
+            <label>
+              City
+              <input name="city" type="search" placeholder="Austin" />
+            </label>
+
+            <label>
+              Name or business
+              <input name="name" type="search" placeholder="Jane Smith or firm" />
+            </label>
+
+            <button class="primary" type="submit">Search licenses</button>
+          </form>
+        </section>
+
+        <section class="results" aria-labelledby="results-title">
+          <div class="result-toolbar">
+            <div>
+              <h2 id="results-title">Renewal queue</h2>
+              <p id="resultSummary">Loading records...</p>
+            </div>
+            <div class="actions">
+              <button id="saveMonitor" type="button">Save monitor</button>
+              <button id="exportCsv" class="primary" type="button">Export CSV</button>
+            </div>
+          </div>
+
+          <div class="metrics" aria-label="Search metrics">
+            <div>
+              <span id="metricMatches">0</span>
+              <p>matches</p>
+            </div>
+            <div>
+              <span id="metricSoon">0</span>
+              <p>inside 30 days</p>
+            </div>
+            <div>
+              <span id="metricStates">0</span>
+              <p>states</p>
+            </div>
+          </div>
+
+          <div class="table-wrap">
+            <table>
+              <thead>
+                <tr>
+                  <th>Prospect</th>
+                  <th>License</th>
+                  <th>Status</th>
+                  <th>Renewal</th>
+                  <th>Location</th>
+                  <th>Freshness</th>
+                </tr>
+              </thead>
+              <tbody id="licenseRows"></tbody>
+            </table>
+          </div>
+        </section>
+
+        <aside class="monitor" aria-labelledby="monitor-title">
+          <div class="section-heading">
+            <h2 id="monitor-title">Monitor</h2>
+            <span id="monitorState">Draft</span>
+          </div>
+          <p class="monitor-copy">
+            Save the current filter as a renewal monitor and use it as the trigger for CRM tasks.
+          </p>
+          <dl>
+            <div>
+              <dt>Window</dt>
+              <dd id="activeWindow">0-60 days</dd>
+            </div>
+            <div>
+              <dt>CRM action</dt>
+              <dd>Create renewal task</dd>
+            </div>
+            <div>
+              <dt>Refresh</dt>
+              <dd>Daily</dd>
+            </div>
+          </dl>
+          <div id="notice" role="status" aria-live="polite"></div>
+        </aside>
+      </main>
+    </div>
+
+    <script src="/static/app.js"></script>
+  </body>
+</html>
