@@ -11,11 +11,25 @@ const exportCsv = document.querySelector("#exportCsv");
 const resetFilters = document.querySelector("#resetFilters");
 const chips = Array.from(document.querySelectorAll(".chip"));
 
+let apiBaseUrl = "";
 let currentParams = new URLSearchParams({
   renewal_window_min: "0",
   renewal_window_max: "60",
   limit: "100",
 });
+
+function apiUrl(path) {
+  return `${apiBaseUrl}${path}`;
+}
+
+function escapeHtml(value) {
+  return String(value ?? "")
+    .replaceAll("&", "&amp;")
+    .replaceAll("<", "&lt;")
+    .replaceAll(">", "&gt;")
+    .replaceAll('"', "&quot;")
+    .replaceAll("'", "&#039;");
+}
 
 function activeChip() {
   return chips.find((chip) => chip.classList.contains("active"));
@@ -78,24 +92,34 @@ function renderRows(licenses) {
   rows.innerHTML = licenses
     .map((license) => {
       const soon = license.renewal_window_days <= 30 ? "soon" : "";
+      const fullName = escapeHtml(license.full_name);
+      const businessName = escapeHtml(license.business_name || "No business listed");
+      const profession = escapeHtml(license.profession);
+      const licenseType = escapeHtml(license.license_type_code);
+      const licenseNumber = escapeHtml(license.license_number);
+      const specialty = escapeHtml(license.specialty || "No specialty");
+      const status = escapeHtml(license.status_normalized);
+      const city = escapeHtml(license.address_city || "");
+      const state = escapeHtml(license.source_state);
+      const zip = escapeHtml(license.address_zip || "");
       return `
         <tr>
           <td>
-            <div class="primary-line">${license.full_name}</div>
-            <div class="secondary-line">${license.business_name || "No business listed"}</div>
+            <div class="primary-line">${fullName}</div>
+            <div class="secondary-line">${businessName}</div>
           </td>
           <td>
-            <div class="primary-line">${license.profession}</div>
-            <div class="secondary-line">${license.license_type_code} ${license.license_number} · ${license.specialty || "No specialty"}</div>
+            <div class="primary-line">${profession}</div>
+            <div class="secondary-line">${licenseType} ${licenseNumber} · ${specialty}</div>
           </td>
-          <td><span class="status">${license.status_normalized}</span></td>
+          <td><span class="status">${status}</span></td>
           <td>
             <div class="days ${soon}">${license.renewal_window_days} days</div>
             <div class="secondary-line">${formatDate(license.expiration_date)}</div>
           </td>
           <td>
-            <div class="primary-line">${license.address_city || ""}, ${license.source_state}</div>
-            <div class="secondary-line">${license.address_zip || ""}</div>
+            <div class="primary-line">${city}, ${state}</div>
+            <div class="secondary-line">${zip}</div>
           </td>
           <td>
             <div class="primary-line">${freshness(license.source_fetched_at)}</div>
@@ -121,8 +145,11 @@ function renderMetrics(payload) {
 async function search() {
   const params = applyFormParams();
   summary.textContent = "Searching license boards...";
-  const response = await fetch(`/licenses?${params.toString()}`);
-  if (!response.ok) throw new Error("Search failed");
+  const response = await fetch(apiUrl(`/licenses?${params.toString()}`));
+  if (!response.ok) {
+    const message = response.status === 503 ? "Data service is temporarily unavailable." : "Search failed.";
+    throw new Error(message);
+  }
   const payload = await response.json();
   renderMetrics(payload);
   renderRows(payload.results);
@@ -150,12 +177,12 @@ resetFilters.addEventListener("click", () => {
 
 exportCsv.addEventListener("click", () => {
   const params = new URLSearchParams(currentParams);
-  window.location.href = `/licenses/export.csv?${params.toString()}`;
+  window.location.href = apiUrl(`/licenses/export.csv?${params.toString()}`);
 });
 
 saveMonitor.addEventListener("click", async () => {
   const params = applyFormParams();
-  const response = await fetch("/monitors", {
+  const response = await fetch(apiUrl("/monitors"), {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({
@@ -181,4 +208,13 @@ function showError(error) {
   notice.textContent = error.message;
 }
 
-search().catch(showError);
+async function boot() {
+  const response = await fetch("/config");
+  if (response.ok) {
+    const config = await response.json();
+    apiBaseUrl = config.apiBaseUrl || "";
+  }
+  await search();
+}
+
+boot().catch(showError);
