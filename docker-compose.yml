@@ -1,0 +1,19 @@
+services:
+  postgres:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_DB: crediva
+      POSTGRES_USER: crediva
+      POSTGRES_PASSWORD: crediva
+    ports:
+      - "5432:5432"
+    volumes:
+      - crediva_postgres:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U crediva -d crediva"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+volumes:
+  crediva_postgres:

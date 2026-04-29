@@ -1,0 +1,35 @@
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "crediva-backend"
+version = "0.1.0"
+description = "Backend API for Crediva license freshness and renewal-window search."
+requires-python = ">=3.9"
+dependencies = [
+  "alembic>=1.13.2",
+  "fastapi>=0.115.0",
+  "psycopg[binary]>=3.2.3",
+  "pydantic-settings>=2.5.2",
+  "python-dotenv>=1.0.1",
+  "sqlalchemy>=2.0.35",
+  "uvicorn[standard]>=0.30.6",
+]
+
+[project.optional-dependencies]
+dev = [
+  "httpx>=0.27.2",
+  "pytest>=8.3.3",
+  "ruff>=0.6.8",
+]
+
+[tool.ruff]
+line-length = 100
+target-version = "py39"
+
+[tool.setuptools.packages.find]
+include = ["app*"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
